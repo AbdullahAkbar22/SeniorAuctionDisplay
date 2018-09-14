@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+<title>SM silent auction movetest</title>
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/vue"></script>
+
+<script>
+
+//Global variables
+APIurl = "items.json";
+
+//Height is in pixels
+rowheight = 50;
+
+//Timestamp to send to server when making API calls
+lastTime = new Date().toISOString();
+
+//Refresh time is in milliseconds and is the refresh time for the API calls
+refreshTime = 10000;
+
+</script>
+
+
+
+
+<style>
+
+#mainTable,#tableBody{
+	position:absolute;
+}	
+.itemRow{
+	width:100%;
+	//text-align:center;
+	position:absolute;
+	height:50px;
+	
+	background-color:white;
+	
+}
+
+.itemRow td, th{
+	width:25vw;
+}
+
+.table-striped tbody tr:nth-of-type(odd){
+    background-color: rgb(6,40,85);
+	color: rgb(250,207,22);
+}
+
+.table-striped tbody tr:nth-of-type(even){
+    background-color: rgb(250,207,22);
+	color: rgb(6,40,85);
+}
+.table td, .table th{
+	border-top:0px;
+}
+.highlight{
+	background-color:yellow;
+}
+
+</style>
+
+
+
+</head>
+
+
+<body>
+
+<div class="container" id="dateTable">
+
+</div>
+	
+
+<table class="table " id="mainTable">
+	<thead>
+	<th>Catalog #</th><th>Item Name</th><th>Item Price</th><th>Last Bid</th>
+	</thead>
+	<tbody id="dataTable">
+	</tbody>
+  
+</table>
+
+<div id="dataGet">
+
+</div>
+
+
+<script>
+
+//Get the index of the fullArray which has a certain name value
+function findLastBidIndex(lastBidGiven){
+	for(i = 0; i < lastBidArray.length; i++){
+		if(lastBidGiven == Date.parse(fullItemArray[i][4])){
+			return i;
+		}
+	}
+	return - 1;
+}
+
+//Function to show the lastBid time-- highlights the time and displays it in seconds when it is under 2 minutes
+
+function showDisplayDate(bidDateGiven){
+	CurrentDate = Date.parse(new Date());
+	dateDifference = CurrentDate - bidDateGiven;
+	if(dateDifference <= 120000){
+		displayDate = Math.round(dateDifference / 1000);
+		displayDateString = "<span class='highlight'>" + displayDate + " Secs Ago</span>";
+	}
+	else{
+		displayDate = Math.round(dateDifference / 60000);
+		displayDateString = displayDate + " Mins Ago";
+	}
+	return displayDateString;
+}
+
+function sortNumber(a,b) {
+    return a - b;
+}
+
+$(document).ready(function(){
+
+	topBuffer = 30;
+	topMargin = topBuffer;
+	zIndex = 10;
+	//startPosition = 0;
+	$.getJSON( APIurl, {last:lastTime}, function( data ) {
+		lastTime = data['last'];
+			
+			lastBidArray = [];
+			fullItemArray = [];
+			$.each(data['items'], function( key, itemData ) {
+				parsedDate = Date.parse(itemData["lastBid"]);
+				
+				lastBidArray.push(Date.parse(itemData["lastBid"]));
+				fullItemArray.push([itemData["catalog"],itemData["name"],itemData["sku"],itemData["price"],itemData["lastBid"]]);
+			});
+			lastBidArray.sort(sortNumber).reverse();
+			lastBidPosition = 0;
+			$.each(lastBidArray, function( key, itemLastBid ) {
+					
+					lastBidIndex = findLastBidIndex(itemLastBid);
+					
+					//alert("item: " + itemLastBid + " and  index: " + lastBidIndex);
+					
+					displayDateString = showDisplayDate(itemLastBid);
+					$("#dataTable").append("<tr class='itemRow' id='"+fullItemArray[lastBidIndex][2]+"' style='margin-top:"+(topMargin + (lastBidPosition * 50))+"px;z-index:"+zIndex + ";' position = '"+lastBidPosition+"'><td>" + fullItemArray[lastBidIndex][0] + " </td><td> " + fullItemArray[lastBidIndex][1] + "</td><td class='itemPrice'> $" + fullItemArray[lastBidIndex][3] + "</td><td class='lastBidTime'> " + displayDateString + "</td></tr>");
+					//topMargin += rowheight;
+					zIndex++;
+					lastBidPosition++;
+			
+			});
+		//$("#dataTable").append("<tr class='itemRow' id='"+itemData['sku']+"' style='margin-top:"+ topMargin +"px;z-index:"+zIndex + ";' position = '"+nameIndex+"'><td>" + fullItemArray[nameIndex][0] + " </td><td> " + fullItemArray[nameIndex][1] + "</td><td> $" + fullItemArray[nameIndex][3] + "</td><td> " + displayDateString + "</td></tr>");
+
+
+			
+		});
+});
+
+	
+
+
+
+</script>
+
+
+<script>
+
+	
+	
+	function pullData(){
+		$.getJSON( APIurl, {last:lastTime}, function( data ) {
+		lastTime = data['last'];
+			
+			lastBidArray = [];
+			fullItemArray = [];
+			$.each(data['items'], function( key, itemData ) {
+				lastBidArray.push(Date.parse(itemData["lastBid"]));
+				fullItemArray.push([itemData["catalog"],itemData["name"],itemData["sku"],itemData["price"],itemData["lastBid"]]);
+			});
+			lastBidArray.sort(sortNumber).reverse();
+			theLastBidPosition = 0;
+			$.each(lastBidArray, function( key, itemLastBid ) {
+					lastBidIndex = findLastBidIndex(itemLastBid);
+					$("#" + fullItemArray[lastBidIndex][2]).find(".itemPrice").html("$" + fullItemArray[lastBidIndex][3]);
+					displayDateString = showDisplayDate(Date.parse(fullItemArray[lastBidIndex][4]));
+					$("#" + fullItemArray[lastBidIndex][2]).find(".lastBidTime").html(displayDateString);
+					$("#" + fullItemArray[lastBidIndex][2]).attr("position",theLastBidPosition);
+					theLastBidPosition++;
+			});
+		}).done(function(){moveAround();});
+		
+		
+	
+	}
+	
+	
+	function moveAround(){
+
+		$(".itemRow").each(function(){
+			position = eval($(this).attr("position"));
+			fromTop = eval($(this).css("marginTop").replace("px",""));
+			if(fromTop != (topBuffer + (position * 50))){
+				 $(this).animate({
+					marginTop: (topBuffer + (position * 50)) + "px"
+					},2000,
+				 function(){
+				  $(this).css("z-index",position + 10);
+				 }
+					);
+				
+			}
+			
+		});
+	}
+	
+	setInterval(function(){pullData();},refreshTime);
+	
+</script>

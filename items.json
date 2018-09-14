@@ -1,0 +1,35 @@
+{
+  "last": "2017-09-16T18:36:00",
+  "items": [
+    {
+      "lastBid": "2017-09-17T20:57:37.105Z",
+      "sku": "120",
+      "catalog": "81",
+      "name": "Poker with Paul",
+      "price": "220"
+    },
+    {
+      "lastBid": "2017-09-17T21:00:58.020Z",
+      "sku": "112",
+      "catalog": "17",
+      "name": "Something Random",
+      "price": "144"
+    },
+	{
+      "lastBid": "2017-09-17T21:01:34.867Z",
+      "sku": "232",
+      "catalog": "10",
+      "name": "CoolStuff",
+      "price": "812"
+    },
+	{
+      "lastBid": "2017-12-15T23:17:31",
+      "sku": "188",
+      "catalog": "19",
+      "name": "Coffee for me!",
+      "price": "193"
+    }
+	
+	
+  ]
+}
